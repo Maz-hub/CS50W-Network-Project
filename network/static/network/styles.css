@@ -1,0 +1,24 @@
+.like-icon {
+    height: 20px;
+    width: 20px;
+    cursor: pointer;
+}
+
+.like-icon path {
+    fill: hsl(0, 0%, 50%);
+    transition: fill 0.3s ease, filter 0.3s ease;
+}
+
+.like-icon:hover path {
+    filter: drop-shadow(0 0 40px #e31af9);
+}
+
+
+.like-icon.liked path {
+    fill: #e31af9;
+}
+
+/* responsivness */
+#sidebarMenu {
+    transition: height 0.3s ease;
+}

@@ -44,4 +44,46 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
   });
+  // EDIT BUTTON
+  document.querySelectorAll(".edit-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const postId = button.dataset.postId;
+      const card = button.closest(".card");
+      const contentP = card.querySelector("p");
+      const originalContent = contentP.textContent;
+
+      // Replace content with textarea
+      const textarea = document.createElement("textarea");
+      textarea.className = "form-control";
+      textarea.value = originalContent;
+
+      // Create Save button
+      const saveBtn = document.createElement("button");
+      saveBtn.textContent = "Save";
+      saveBtn.className = "btn btn-sm btn-info mt-2";
+
+      // Replace paragraph with textarea
+      contentP.replaceWith(textarea);
+      button.replaceWith(saveBtn);
+
+      // Save logic
+      saveBtn.addEventListener("click", () => {
+        fetch(`/posts/${postId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          body: JSON.stringify({ content: textarea.value }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            const newP = document.createElement("p");
+            newP.textContent = textarea.value;
+            textarea.replaceWith(newP);
+            saveBtn.replaceWith(button);
+          });
+      });
+    });
+  });
 });

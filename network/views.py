@@ -3,17 +3,24 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-import json
+from django.core.paginator import Paginator
 from .models import Post, User, Follow
+import json
 
 
 
 def index(request):
-    posts = Post.objects.all().order_by("-timestamp")
+    posts = Post.objects.all().order_by('-timestamp')
+    paginator = Paginator(posts, 10)  # Show 10 posts per page
+
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     return render(request, "network/index.html", {
-        "posts": posts
+        "page_obj": page_obj
     })
 
 
@@ -143,3 +150,37 @@ def toggle_follow(request, username):
             Follow.objects.create(user=target_user, follower=request.user)  # follow
 
     return HttpResponseRedirect(reverse("profile", args=[username]))
+
+@login_required
+def following(request):
+    # Get users the current user is following
+    followed_users = Follow.objects.filter(follower=request.user).values_list("user", flat=True)
+    
+    # Get posts from followed users only
+    posts = Post.objects.filter(user__in=followed_users).order_by("-timestamp")
+
+    return render(request, "network/following.html", {
+        "posts": posts
+    })
+
+@login_required
+@require_http_methods(["PUT"])
+def edit_post(request, post_id):
+    try:
+        post = Post.objects.get(pk=post_id)
+    except Post.DoesNotExist:
+        return JsonResponse({"error": "Post not found."}, status=404)
+
+    if post.user != request.user:
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+
+    data = json.loads(request.body)
+    new_content = data.get("content", "")
+
+    if not new_content.strip():
+        return JsonResponse({"error": "Content cannot be empty."}, status=400)
+
+    post.content = new_content
+    post.save()
+
+    return JsonResponse({"message": "Post updated."})

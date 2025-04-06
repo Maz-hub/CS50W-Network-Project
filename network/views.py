@@ -1,12 +1,12 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 import json
-from .models import Post, User
+from .models import Post, User, Follow
 
 
 
@@ -103,3 +103,43 @@ def toggle_like(request, post_id):
         "liked": liked,
         "likes_count": post.likes.count()
     })
+
+def profile(request, username):
+    user_profile = get_object_or_404(User, username=username)
+    posts = Post.objects.filter(user=user_profile).order_by('-timestamp')
+
+    # Count followers and following
+    follower_count = Follow.objects.filter(user=user_profile).count()
+    following_count = Follow.objects.filter(follower=user_profile).count()
+
+    # Check if the current logged-in user is following this profile
+    is_following = False
+    if request.user.is_authenticated:
+        is_following = Follow.objects.filter(user=user_profile, follower=request.user).exists()
+
+    context = {
+        "profile_user": user_profile,
+        "posts": posts,
+        "follower_count": follower_count,
+        "following_count": following_count,
+        "is_following": is_following,
+    }
+    return render(request, "network/profile.html", context)
+
+@login_required
+def toggle_follow(request, username):
+    if request.method == "POST":
+        target_user = get_object_or_404(User, username=username)
+
+        # Don't allow following yourself
+        if request.user == target_user:
+            return HttpResponseRedirect(reverse("profile", args=[username]))
+
+        # Check if already following
+        follow_obj = Follow.objects.filter(user=target_user, follower=request.user)
+        if follow_obj.exists():
+            follow_obj.delete()  # unfollow
+        else:
+            Follow.objects.create(user=target_user, follower=request.user)  # follow
+
+    return HttpResponseRedirect(reverse("profile", args=[username]))

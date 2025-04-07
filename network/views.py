@@ -132,15 +132,17 @@ def toggle_follow(request, username):
 
 @login_required
 def following(request):
-    # Get users the current user is following
     followed_users = Follow.objects.filter(follower=request.user).values_list("user", flat=True)
-    
-    # Get posts from followed users only
     posts = Post.objects.filter(user__in=followed_users).order_by("-timestamp")
 
+    paginator = Paginator(posts, 10)  # Paginate just like index
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     return render(request, "network/following.html", {
-        "posts": posts
+        "page_obj": page_obj
     })
+
 
 @login_required
 @require_http_methods(["PUT"])

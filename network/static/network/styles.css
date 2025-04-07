@@ -22,3 +22,17 @@
 #sidebarMenu {
     transition: height 0.3s ease;
 }
+
+/* Left menu hover effects */
+.nav-link:hover {
+    color: #1cc2da !important;
+}
+
+.nav-link:hover img {
+    filter: brightness(1.2) drop-shadow(0 0 4px #1cc2da);
+    transition: filter 0.2s ease;
+}
+
+.nav-link img {
+    transition: filter 0.2s ease;
+}

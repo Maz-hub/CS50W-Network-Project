@@ -1,33 +1,61 @@
 {% extends "network/layout.html" %}
-
 {% block body %}
 
-<h3>@{{ profile_user.username }}</h3>
+<div class="card p-4 mb-4">
+    <h3 class="mb-3">@{{ user_profile.username }}</h3>
+    <p><strong>{{ followers }}</strong> Followers</p>
+    <p><strong>{{ following }}</strong> Following</p>
 
-<p>
-    <strong>{{ follower_count }}</strong> Followers |
-    <strong>{{ following_count }}</strong> Following
-</p>
+    {% if request.user != user_profile %}
+    <form action="{% url 'toggle_follow' user_profile.username %}" method="post">
+        {% csrf_token %}
+        {% if is_following %}
+        <button type="submit" class="btn btn-sm btn-danger">Unfollow</button>
+        {% else %}
+        <button type="submit" class="btn btn-sm btn-success">Follow</button>
+        {% endif %}
+    </form>
+    {% endif %}
+</div>
 
-{% if user != profile_user %}
-<form action="{% url 'toggle_follow' username=profile_user.username %}" method="POST">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-sm btn-outline-light">
-        {% if is_following %}Unfollow{% else %}Follow{% endif %}
-    </button>
-</form>
-{% endif %}
 
-<hr />
-
-{% for post in posts %}
+<!-- Show user's posts -->
+{% for post in page_obj %}
 <div class="card mb-3 p-3">
+    <strong>@{{ post.user.username }}</strong> <span class="text-muted">{{ post.timestamp }}</span>
     <p>{{ post.content }}</p>
-    <small class="text-muted">{{ post.timestamp }}</small>
 </div>
 {% empty %}
-<p>No posts yet.</p>
+<p>This user hasn't posted yet.</p>
 {% endfor %}
 
+<!-- Pagination controls -->
+<nav aria-label="Post pagination">
+    <ul class="pagination justify-content-center mt-4">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo; Prev</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">&laquo; Prev</span>
+        </li>
+        {% endif %}
+
+        <li class="page-item active">
+            <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        </li>
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next &raquo;</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">Next &raquo;</span>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
 
 {% endblock %}

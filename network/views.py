@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User 
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -111,28 +112,6 @@ def toggle_like(request, post_id):
         "likes_count": post.likes.count()
     })
 
-def profile(request, username):
-    user_profile = get_object_or_404(User, username=username)
-    posts = Post.objects.filter(user=user_profile).order_by('-timestamp')
-
-    # Count followers and following
-    follower_count = Follow.objects.filter(user=user_profile).count()
-    following_count = Follow.objects.filter(follower=user_profile).count()
-
-    # Check if the current logged-in user is following this profile
-    is_following = False
-    if request.user.is_authenticated:
-        is_following = Follow.objects.filter(user=user_profile, follower=request.user).exists()
-
-    context = {
-        "profile_user": user_profile,
-        "posts": posts,
-        "follower_count": follower_count,
-        "following_count": following_count,
-        "is_following": is_following,
-    }
-    return render(request, "network/profile.html", context)
-
 @login_required
 def toggle_follow(request, username):
     if request.method == "POST":
@@ -184,3 +163,25 @@ def edit_post(request, post_id):
     post.save()
 
     return JsonResponse({"message": "Post updated."})
+
+def profile(request, username):
+    user_profile = User.objects.get(username=username)
+    posts = Post.objects.filter(user=user_profile).order_by("-timestamp")
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    followers = Follow.objects.filter(user=user_profile).count()
+    following = Follow.objects.filter(follower=user_profile).count()
+
+    is_following = False
+    if request.user.is_authenticated and request.user != user_profile:
+        is_following = Follow.objects.filter(user=user_profile, follower=request.user).exists()
+
+    return render(request, "network/profile.html", {
+        "user_profile": user_profile,
+        "page_obj": page_obj,
+        "followers": followers,
+        "following": following,
+        "is_following": is_following
+    })

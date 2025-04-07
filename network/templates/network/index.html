@@ -17,7 +17,8 @@
 <!-- POSTS -->
 {% for post in page_obj %}
 <div class="card mb-3 p-3">
-    <strong>@{{ post.user.username }}</strong>
+    <a href="{% url 'profile' post.user.username %}" class="fw-bold text-info">@{{ post.user.username }}</a>
+
     <p>{{ post.content }}</p>
     <small class="text-muted">{{ post.timestamp }}</small>
     <!-- edit post -->

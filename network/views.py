@@ -16,7 +16,7 @@ import json
 def index(request):
     posts = Post.objects.all().order_by('-timestamp')
     paginator = Paginator(posts, 10)  # Show 10 posts per page
-
+    # Get the page number from the request
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -27,7 +27,6 @@ def index(request):
 
 def login_view(request):
     if request.method == "POST":
-
         # Attempt to sign user in
         username = request.POST["username"]
         password = request.POST["password"]
@@ -78,6 +77,7 @@ def register(request):
     
 @login_required
 def new_post(request):
+    # Check if the user is authenticated
     if request.method == "POST":
         content = request.POST.get("content")
         if content:
@@ -86,27 +86,29 @@ def new_post(request):
     return redirect("index")
 
 
-@csrf_exempt  # to improve
+@csrf_exempt
 def toggle_like(request, post_id):
+    # Check if the request is a POST request
+    # and if the user is authenticated
     if request.method != "POST":
         return JsonResponse({"error": "POST request required."}, status=400)
 
     user = request.user
     if not user.is_authenticated:
         return JsonResponse({"error": "Authentication required."}, status=403)
-
+    # Check if the post exists
     try:
         post = Post.objects.get(pk=post_id)
     except Post.DoesNotExist:
         return JsonResponse({"error": "Post not found."}, status=404)
-
+    # Check if the user has already liked the post
     if user in post.likes.all():
         post.likes.remove(user)
         liked = False
     else:
         post.likes.add(user)
         liked = True
-
+    # Return the updated like status and count
     return JsonResponse({
         "liked": liked,
         "likes_count": post.likes.count()
@@ -132,6 +134,8 @@ def toggle_follow(request, username):
 
 @login_required
 def following(request):
+    # Get the list of users that the current user is following
+    # and fetch their posts
     followed_users = Follow.objects.filter(follower=request.user).values_list("user", flat=True)
     posts = Post.objects.filter(user__in=followed_users).order_by("-timestamp")
 
@@ -145,7 +149,7 @@ def following(request):
 
 
 @login_required
-@require_http_methods(["PUT"])
+@require_http_methods(["PUT"]) # Ensure only PUT requests are allowed
 def edit_post(request, post_id):
     try:
         post = Post.objects.get(pk=post_id)
@@ -154,32 +158,34 @@ def edit_post(request, post_id):
 
     if post.user != request.user:
         return JsonResponse({"error": "Unauthorized"}, status=403)
-
+    # Parse the JSON data from the request body
     data = json.loads(request.body)
     new_content = data.get("content", "")
-
+    # Validate the new content
     if not new_content.strip():
         return JsonResponse({"error": "Content cannot be empty."}, status=400)
-
+    # Update the post content
     post.content = new_content
     post.save()
 
     return JsonResponse({"message": "Post updated."})
 
 def profile(request, username):
+    # Get the user profile based on the username
+    # and fetch their posts
     user_profile = User.objects.get(username=username)
     posts = Post.objects.filter(user=user_profile).order_by("-timestamp")
     paginator = Paginator(posts, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-
+    # Get the number of followers and following
     followers = Follow.objects.filter(user=user_profile).count()
     following = Follow.objects.filter(follower=user_profile).count()
-
+    # Check if the logged-in user is following this profile
     is_following = False
     if request.user.is_authenticated and request.user != user_profile:
         is_following = Follow.objects.filter(user=user_profile, follower=request.user).exists()
-
+    # Render the profile page with the user's posts and follow status
     return render(request, "network/profile.html", {
         "user_profile": user_profile,
         "page_obj": page_obj,

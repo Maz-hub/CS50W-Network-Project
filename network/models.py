@@ -5,6 +5,7 @@ from django.db import models
 class User(AbstractUser):
     pass
 
+
 class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
     content = models.TextField(max_length=500)
@@ -14,6 +15,7 @@ class Post(models.Model):
     def __str__(self):
         return f"{self.user.username}: {self.content[:30]}"
     
+
 class Follow(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="followers")  # the person being followed
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")  # the one following

@@ -1,10 +1,13 @@
 // CSRF token helper
 function getCookie(name) {
   let cookieValue = null;
+  // If the cookie is not set, return null
   if (document.cookie && document.cookie !== "") {
     const cookies = document.cookie.split(";");
     for (let i = 0; i < cookies.length; i++) {
       const cookie = cookies[i].trim();
+      // Check if the cookie starts with the name we are looking for
+      // If it does, decode and return the value
       if (cookie.substring(0, name.length + 1) === name + "=") {
         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
         break;
@@ -35,19 +38,22 @@ document.addEventListener("DOMContentLoaded", () => {
           "X-CSRFToken": getCookie("csrftoken"),
         },
       })
+        // Handle response
+        // If the response is not ok, revert the optimistic update
         .then((response) => {
           if (!response.ok) {
             throw new Error("Not allowed");
           }
           return response.json();
         })
+        // Update the UI with the response data
         .then((data) => {
           span.textContent = data.likes_count;
           icon.dataset.liked = data.liked;
           icon.classList.toggle("liked", data.liked);
         })
         .catch((error) => {
-          // Revert UI because user wasn't allowed
+          // Revert optimistic UI update
           icon.classList.toggle("liked", liked); // undo toggle
           icon.dataset.liked = liked;
           span.textContent = currentLikes; // revert like count

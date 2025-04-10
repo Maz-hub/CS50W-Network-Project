@@ -1,4 +1,6 @@
-{% extends "network/layout.html" %} {% block body %}
+{% extends "network/layout.html" %}
+
+{% block body %}
 
 <h3>Following Feed</h3>
 <hr />
@@ -18,9 +20,7 @@
   <ul class="pagination justify-content-center mt-4">
     {% if page_obj.has_previous %}
     <li class="page-item">
-      <a class="page-link" href="?page={{ page_obj.previous_page_number }}"
-        >&laquo; Prev</a
-      >
+      <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo; Prev</a>
     </li>
     {% else %}
     <li class="page-item disabled">
@@ -29,16 +29,12 @@
     {% endif %}
 
     <li class="page-item active">
-      <span class="page-link"
-        >{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span
-      >
+      <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
     </li>
 
     {% if page_obj.has_next %}
     <li class="page-item">
-      <a class="page-link" href="?page={{ page_obj.next_page_number }}"
-        >Next &raquo;</a
-      >
+      <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next &raquo;</a>
     </li>
     {% else %}
     <li class="page-item disabled">

@@ -1,15 +1,14 @@
-{% extends "network/layout.html" %} {% load static %} {% block body %} {% if
-user.is_authenticated %}
+{% extends "network/layout.html" %}
+
+{% load static %}
+
+{% block body %}
+
+{% if user.is_authenticated %}
 <div class="card my-3 p-3">
   <form action="{% url 'new_post' %}" method="post">
     {% csrf_token %}
-    <textarea
-      name="content"
-      class="form-control"
-      placeholder="What's on your mind?"
-      rows="3"
-      required
-    ></textarea>
+    <textarea name="content" class="form-control" placeholder="What's on your mind?" rows="3" required></textarea>
     <button type="submit" class="btn btn-primary mt-2">Post</button>
   </form>
 </div>
@@ -18,19 +17,14 @@ user.is_authenticated %}
 <!-- POSTS -->
 {% for post in page_obj %}
 <div class="card mb-3 p-3">
-  <a href="{% url 'profile' post.user.username %}" class="fw-bold text-info"
-    >@{{ post.user.username }}</a
-  >
+  <a href="{% url 'profile' post.user.username %}" class="fw-bold text-info">@{{ post.user.username }}</a>
 
   <p>{{ post.content }}</p>
   <small class="text-muted">{{ post.timestamp }}</small>
   <!-- edit post -->
   {% if user == post.user %}
   <div class="text-end">
-    <button
-      class="btn btn-sm btn btn-outline-secondary edit-btn"
-      data-post-id="{{ post.id }}"
-    >
+    <button class="btn btn-sm btn btn-outline-secondary edit-btn" data-post-id="{{ post.id }}">
       Edit
     </button>
   </div>
@@ -39,16 +33,12 @@ user.is_authenticated %}
 
   <!-- LIKES -->
   <div class="d-flex align-items-center mt-2">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="like-icon {% if user in post.likes.all %}liked{% endif %}"
-      viewBox="0 -960 960 960"
-      data-post-id="{{ post.id }}"
-      data-liked="{% if user in post.likes.all %}true{% else %}false{% endif %}"
-    >
+    <svg xmlns="http://www.w3.org/2000/svg" class="like-icon {% if user in post.likes.all %}liked{% endif %}"
+      viewBox="0 -960 960 960" data-post-id="{{ post.id }}"
+      data-liked="{% if user in post.likes.all %}true{% else %}false{% endif %}">
       <path
-        d="m480-174.08-22.54-20.84q-100.38-91.74-165.65-157.56-65.27-65.83-103.58-115.94-38.31-50.12-53.27-90.25T120-638.38q0-74.44 50.5-125.03T295.38-814q54.7 0 101.66 29.31Q444-755.38 480-699q38.92-57.85 84.66-86.42Q610.39-814 664.62-814q74.38 0 124.88 50.59T840-638.38q0 39.58-14.96 79.71-14.96 40.13-53.18 90.08-38.22 49.95-103.58 115.94T502.54-194.92L480-174.08Zm0-41.3q98.2-89.58 161.62-153.47 63.43-63.89 100.79-111.67 37.36-47.79 52.09-84.74 14.73-36.94 14.73-72.98 0-62.3-41.23-103.64-41.23-41.35-103.16-41.35-50.75 0-92.68 29.58-41.93 29.57-78.93 91.96h-26.69q-37.54-62.16-79.45-91.85-41.91-29.69-91.93-29.69-61.16 0-102.78 41.35-41.61 41.34-41.61 104.07 0 35.82 14.85 72.81 14.86 36.99 51.7 84.76 36.83 47.78 100.91 111.47T480-215.38Zm0-283.93Z"
-      ></path>
+        d="m480-174.08-22.54-20.84q-100.38-91.74-165.65-157.56-65.27-65.83-103.58-115.94-38.31-50.12-53.27-90.25T120-638.38q0-74.44 50.5-125.03T295.38-814q54.7 0 101.66 29.31Q444-755.38 480-699q38.92-57.85 84.66-86.42Q610.39-814 664.62-814q74.38 0 124.88 50.59T840-638.38q0 39.58-14.96 79.71-14.96 40.13-53.18 90.08-38.22 49.95-103.58 115.94T502.54-194.92L480-174.08Zm0-41.3q98.2-89.58 161.62-153.47 63.43-63.89 100.79-111.67 37.36-47.79 52.09-84.74 14.73-36.94 14.73-72.98 0-62.3-41.23-103.64-41.23-41.35-103.16-41.35-50.75 0-92.68 29.58-41.93 29.57-78.93 91.96h-26.69q-37.54-62.16-79.45-91.85-41.91-29.69-91.93-29.69-61.16 0-102.78 41.35-41.61 41.34-41.61 104.07 0 35.82 14.85 72.81 14.86 36.99 51.7 84.76 36.83 47.78 100.91 111.47T480-215.38Zm0-283.93Z">
+      </path>
     </svg>
     <span class="ms-2 like-count">{{ post.likes.count }}</span>
   </div>
@@ -61,9 +51,7 @@ user.is_authenticated %}
   <ul class="pagination justify-content-center mt-4">
     {% if page_obj.has_previous %}
     <li class="page-item">
-      <a class="page-link" href="?page={{ page_obj.previous_page_number }}"
-        >&laquo; Prev</a
-      >
+      <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo; Prev</a>
     </li>
     {% else %}
     <li class="page-item disabled">
@@ -72,16 +60,12 @@ user.is_authenticated %}
     {% endif %}
 
     <li class="page-item active">
-      <span class="page-link"
-        >{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span
-      >
+      <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
     </li>
 
     {% if page_obj.has_next %}
     <li class="page-item">
-      <a class="page-link" href="?page={{ page_obj.next_page_number }}"
-        >Next &raquo;</a
-      >
+      <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next &raquo;</a>
     </li>
     {% else %}
     <li class="page-item disabled">

@@ -96,6 +96,7 @@ def toggle_like(request, post_id):
     user = request.user
     if not user.is_authenticated:
         return JsonResponse({"error": "Authentication required."}, status=403)
+        
     # Check if the post exists
     try:
         post = Post.objects.get(pk=post_id)
